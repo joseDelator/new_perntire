@@ -102,26 +102,38 @@ app.get("/tires", async (req, res) => {
                 console.log(jsonData)
                 
                 const sub_quanity = parseInt(quanity);
-                console.log(sub_quanity)
+                
                const newquantiy = oldquantiy  - sub_quanity;
                if(newquantiy < 0 ){
-                   res.json('subtrating to much')
-               }else{
-                //update quantiy
-                const update = await pool.query(
-                    'UPDATE tires SET quanity = $4 WHERE width = $1 AND ratio = $2 AND rim = $3;',
-                    [width, ratio, rim, newquantiy]
-                   
-                );
-        
-                res.json(newquantiy);
-               
-                console.log("tires quanity has been subtarted");
+                   res.status(400).json('subtrating to much')
                }
-
+               else{
+                   if (newquantiy ==0) {
+                    const del = await pool.query(
+                        ' DELETE FROM tires WHERE width = $1 AND ratio = $2 AND rim = $3;',
+                        [width, ratio, rim]
+                       
+                    );
+                      
+                   } else {
+                       //update quantiy
+                        const update = await pool.query(
+                        'UPDATE tires SET quanity = $4 WHERE width = $1 AND ratio = $2 AND rim = $3;',
+                        [width, ratio, rim, newquantiy]
+                    
+                );
+                   
+                
+                }
+                res.json({
+                    width: width,
+                    ratio: ratio,
+                    rim: rim,
+                    quantity: newquantiy});
+                }
             
-            }else{
-                res.json("there is no tire");
+        }else{
+                res.status(404).json("there is no tire");
             }
             }catch (err) {
                 console.error(err.message);
